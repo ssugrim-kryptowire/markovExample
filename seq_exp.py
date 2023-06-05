@@ -120,3 +120,5 @@ if __name__ == '__main__':
     axes[1][1].set_ylim(0,3500)
     for tick in axes[1][1].get_xticklabels():
         tick.set_rotation(90)
+    
+    plt.show()
