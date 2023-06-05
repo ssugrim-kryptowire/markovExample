@@ -6,17 +6,26 @@ Created on Fri Feb 21 15:46:31 2020
 @author: ssugrim
 """
 
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(filename)s -  %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+
 
 from random import randint
 import numpy as np
 import matplotlib.pyplot as plt
-NSAMPLES=10000
+
+RUNS=10000
 BINS=100
 
 def sample():
     return randint(0,9)
 
 def one_run_seq(target):
+    ''' Sequential draws of the integers.
+    '''
     current = [sample(),sample(), sample()]
     
     samples = 3
@@ -24,14 +33,16 @@ def one_run_seq(target):
     while ''.join([str(i) for i in current]) != target:
 #        print(''.join([str(i) for i in current]))
         samples +=1
-        current[2] = current[1]
+        current[2] = current[1] #shift the window to the right
         current[1] = current[0]
         current[0] = sample()
     
-    return samples
+    return samples #what we want is the number of draws until 
 
 
 def one_run_sim(target):
+    ''' Simultaneous draws of the integers (3 at a time)
+    '''
     current = [sample(),sample(), sample()]
     
     samples = 1
@@ -40,22 +51,29 @@ def one_run_sim(target):
 #        print(''.join([str(i) for i in current]))
         samples +=1
         current = [sample(),sample(), sample()]
-           
+    
     return samples
 
 
-def get_data_seq(target, samples=NSAMPLES):
-    data_points = []
-    for i in range(samples):
-        data_points.append(one_run_seq(target))
-    return np.array(data_points)
+def get_data(target, runs=RUNS, mode="sim"):
 
-def get_data_sim(target, samples=NSAMPLES):
-    data_points = []
-    for i in range(samples):
-        data_points.append(one_run_sim(target))
-    return np.array(data_points)
+    retval = None
+    if mode == "sim":
+        data_points = []
+        for i in range(runs):
+            data_points.append(one_run_seq(target))
+        retval = np.array(data_points)
+    elif mode == "seq":
+        data_points = []
+        for i in range(runs):
+            data_points.append(one_run_sim(target))
+        retval = np.array(data_points)
+    else: 
+        logging.error("Bad get data mode: {}".format(mode))
 
+    if retval is not None:
+        logging.debug("Sample count was: {}".format(len(retval)))
+    return retval
     
 def get_stats(arr):
 
@@ -158,17 +176,17 @@ if __name__ == '__main__':
       end
     '''
     
-    print('111 case:')
-    one_one_one_data = get_data_seq('111')
-    print(get_stats(one_one_one_data))
+    logging.info('111 case:')
+    one_one_one_data = get_data('111')
+    logging.info(get_stats(one_one_one_data))
 
-    print('121 case:')
-    one_two_one_data = get_data_seq('121')    
-    print(get_stats(one_two_one_data))
+    logging.info('121 case:')
+    one_two_one_data = get_data('121')    
+    logging.info(get_stats(one_two_one_data))
     
-    print('123 case:')
-    one_two_three_data = get_data_seq('123')    
-    print(get_stats(one_two_three_data))
+    logging.info('123 case:')
+    one_two_three_data = get_data('123')    
+    logging.info(get_stats(one_two_three_data))
     
     fig, axes = plt.subplots(2,2,figsize=(10,10))
     
